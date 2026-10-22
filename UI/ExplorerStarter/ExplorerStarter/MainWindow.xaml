@@ -1,0 +1,405 @@
+﻿<Window x:Class="ExplorerStarter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="QoB"
+        Height="650" Width="1050"
+        MinHeight="450" MinWidth="750"
+        Background="#FFFFFF"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="NavButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="4,1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="5"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg"
+                                        Property="Background"
+                                        Value="#E8EDF5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bg"
+                                        Property="Background"
+                                        Value="#DCE6F5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+        <Style TargetType="ListViewItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="ItemBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="Transparent"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                            <ContentPresenter/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder"
+                                Property="Background"
+                                Value="#F1F5F9"/>
+                            </Trigger>
+
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder"
+                                Property="Background"
+                                Value="#DCEBFA"/>
+                                <Setter TargetName="ItemBorder"
+                                Property="BorderBrush"
+                                Value="#93C5FD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+
+        <!-- Bottom status bar -->
+        <Border DockPanel.Dock="Bottom"
+                BorderBrush="#E5E7EB"
+                BorderThickness="0,1,0,0"
+                Padding="14,8">
+            <TextBlock x:Name="StatusText"
+                       Text="Ready"
+                       FontSize="12"
+                       Foreground="#64748B"/>
+        </Border>
+
+        <!-- Top toolbar -->
+        <StackPanel DockPanel.Dock="Top">
+
+            <!-- Navigation and address -->
+
+            <!-- Chrome-style tab bar -->
+            <!-- Navigation and address -->
+            <Border Padding="14,12"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,0,1">
+                <DockPanel>
+                    <TextBlock Text="📁  File Explorer"
+                               FontSize="19"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <TextBox x:Name="SearchBox"
+                             Width="240"
+                             Height="32"
+                             Padding="8,5"
+                             VerticalContentAlignment="Center"
+                             HorizontalAlignment="Right"
+                             ToolTip="Search files"
+                             TextChanged="SearchBox_TextChanged"
+                             DockPanel.Dock="Right" Background="White"/>
+                </DockPanel>
+            </Border>
+
+            <!-- Navigation and address -->
+            <Border Padding="12,9"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,0,1">
+                <DockPanel>
+                    <StackPanel Orientation="Horizontal"
+                                DockPanel.Dock="Left">
+                        <Button Content="&lt;"
+                                Width="36"
+                                Click="Back_Click"
+                                ToolTip="Back"/>
+                        <Button
+                                Width="36"
+                                Click="Up_Click"
+                                ToolTip="Up" Content="/\"/>
+                    </StackPanel>
+
+                    <TextBox x:Name="AddressBox"
+                             Margin="12,0,0,0"
+                             Height="32"
+                             Padding="10,5"
+                             VerticalContentAlignment="Center"
+                             Text="Home"
+                             IsReadOnly="True"/>
+                </DockPanel>
+            </Border>
+
+            <Border Padding="10,5"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" Width="1029">
+                    <Button Content="＋ New"
+                            Style="{StaticResource NavButton}"
+                            Click="NewFolder_Click"/>
+                    <Button Content="↻ Refresh"
+                            Style="{StaticResource NavButton}"
+                            Click="Refresh_Click"/>
+                    <Button Content="Delete"
+                            Style="{StaticResource NavButton}"
+                            Click="Delete_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Chrome-style tab bar -->
+            <Border Background="#DEE3EA"
+        Padding="8,7,8,0">
+                <DockPanel LastChildFill="True">
+
+                    <Button DockPanel.Dock="Right"
+                Content="+"
+                Width="34"
+                Height="30"
+                Margin="6,0,2,5"
+                FontSize="21"
+                Background="Transparent"
+                BorderThickness="0"
+                Cursor="Hand"
+                ToolTip="New tab"
+                Click="NewTab_Click"/>
+
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="TabBar">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{Binding Background}"
+                                CornerRadius="8,8,0,0"
+                                Width="190"
+                                Height="34"
+                                Margin="0,0,3,0"
+                                Padding="10,0">
+                                        <DockPanel LastChildFill="True"
+                                       VerticalAlignment="Center">
+
+                                            <Button DockPanel.Dock="Right"
+                                        Content="×"
+                                        Width="23"
+                                        Height="23"
+                                        Margin="5,0,0,0"
+                                        FontSize="17"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Click="CloseTab_Click"
+                                        Tag="{Binding}"/>
+
+                                            <Button Content="{Binding Title}"
+                                        HorizontalContentAlignment="Left"
+                                        VerticalContentAlignment="Center"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        FontSize="12"
+                                        ToolTip="{Binding Title}"
+                                        Cursor="Hand"
+                                        Click="SelectTab_Click"
+                                        Tag="{Binding}"/>
+                                        </DockPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- Navigation and address -->
+
+            <!-- Command bar -->
+        </StackPanel>
+
+        <!-- Main content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="205"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Sidebar -->
+            <Border Grid.Column="0"
+                    Background="#F8FAFC"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,1,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="6,12">
+                        <TextBlock Text="QUICK ACCESS"
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   Foreground="#64748B"
+                                   Margin="14,4,0,8"/>
+                        <Button Content="🏠   Home"
+                                Tag="Home"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Button Content="🖥   This PC"
+                                Tag="This PC"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Separator Margin="12,10"/>
+
+                        <Button Content="📁   Documents"
+                                Tag="Documents"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Button Content="🖼   Pictures"
+                                Tag="Pictures"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Button Content="⬇   Downloads"
+                                Tag="Downloads"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Button Content="🎵   Music"
+                                Tag="Music"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+
+                        <Button Content="🎬   Videos"
+                                Tag="Videos"
+                                Style="{StaticResource NavButton}"
+                                Click="Navigate_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <GridSplitter Grid.Column="1"
+                          Width="5"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="Transparent"/>
+
+
+            <!-- Main file area -->
+            <Grid Grid.Column="2" Margin="12">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="FolderTitle"
+               Text="Home"
+               FontSize="22"
+               FontWeight="SemiBold"
+               Margin="4,4,4,16"/>
+
+                <!-- Selection surface -->
+                <Grid x:Name="FileArea"
+          Grid.Row="1"
+          Background="Transparent"
+          ClipToBounds="True"
+          PreviewMouseLeftButtonDown="FileArea_MouseDown"
+          PreviewMouseMove="FileArea_MouseMove"
+          PreviewMouseLeftButtonUp="FileArea_MouseUp">
+
+                    <ListView x:Name="FileList"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  SelectionMode="Extended"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  MouseDoubleClick="FileList_DoubleClick">
+
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="120"
+                            Height="120"
+                            Padding="8"
+                            CornerRadius="8"
+                            Background="Transparent">
+
+                                    <StackPanel VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+
+                                        <TextBlock x:Name="ItemIcon"
+                                       Text="📄"
+                                       FontSize="38"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+
+                                        <TextBlock Text="{Binding Name}"
+                                       FontSize="12"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       MaxHeight="34"
+                                       HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsFolder}"
+                                     Value="True">
+                                        <Setter TargetName="ItemIcon"
+                                    Property="Text"
+                                    Value="📁"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- Drag-selection rectangle -->
+                    <Canvas IsHitTestVisible="False">
+                        <Rectangle x:Name="SelectionRect"
+                       Visibility="Collapsed"
+                       Fill="#403B82F6"
+                       Stroke="#3B82F6"
+                       StrokeThickness="1"/>
+                    </Canvas>
+
+                </Grid>
+            </Grid>
+
+        </Grid>
+    </DockPanel>
+</Window>

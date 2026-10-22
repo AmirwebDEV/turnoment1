@@ -1,0 +1,27 @@
+{
+    "test":{
+        "info":{
+            "name":"a random task",
+            "description":"bla bla bla"
+        },
+        "groups":
+        {
+            "tags":{
+                "mandatory":[
+                    "super important skill"
+                ],
+                "optional":[    
+                    "not so important skill"
+                ]
+            },
+            "classes":[
+                "test",
+                "very serious topic"
+            ]
+        },
+        "data":{
+            "local":["data/test/test.txt"],
+            "web":[]
+        }
+    }
+}
