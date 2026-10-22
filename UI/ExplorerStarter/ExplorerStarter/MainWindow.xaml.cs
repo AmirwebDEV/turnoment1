@@ -1,19 +1,12 @@
-﻿
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Collections.Generic;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace ExplorerStarter
 {
@@ -32,84 +25,86 @@ namespace ExplorerStarter
 
         private Process? pythonProcess;
 
-        private async Task<JsonDocument> SendRequestAsync(
-            object request)
-        {
-            if (pythonProcess == null || pythonProcess.HasExited)
-                throw new InvalidOperationException(
-                    "Python backend is not running.");
 
-            string json = JsonSerializer.Serialize(request);
+        //private void StartPythonBackend()
+        //{
+        //    string scriptPath = Path.GetFullPath("C:\\Users\\Bahalou\\Desktop\\Campus\\UI\\ExplorerStarter\\ExplorerStarter\\PythonBackend");
 
-            await pythonProcess.StandardInput.WriteLineAsync(json);
-            await pythonProcess.StandardInput.FlushAsync();
+        //    var startInfo = new ProcessStartInfo
+        //    {
+        //        FileName = "python",
+        //        Arguments = $"\"{scriptPath}\"",
+        //        UseShellExecute = false,
+        //        RedirectStandardInput = true,
+        //        RedirectStandardOutput = true,
+        //        RedirectStandardError = true,
+        //        CreateNoWindow = true
+        //    };
 
-            string? response =
-                await pythonProcess.StandardOutput.ReadLineAsync();
+        //    pythonProcess = new Process
+        //    {
+        //        StartInfo = startInfo
+        //    };
 
-            if (string.IsNullOrWhiteSpace(response))
-                throw new InvalidOperationException(
-                    "Python backend returned no response.");
+        //    pythonProcess.Start();
+        //}
+        //private async Task<JsonDocument> SendRequestAsync(
+        //    object request)
+        //{
+        //    if (pythonProcess == null || pythonProcess.HasExited)
+        //        throw new InvalidOperationException(
+        //            "Python backend is not running.");
 
-            return JsonDocument.Parse(response);
-        }
+        //    string json = JsonSerializer.Serialize(request);
 
-        private void StartPythonBackend()
-        {
-            string scriptPath = Path.GetFullPath("");
+        //    await pythonProcess.StandardInput.WriteLineAsync(json);
+        //    await pythonProcess.StandardInput.FlushAsync();
 
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "python",
-                Arguments = $"\"{scriptPath}\"",
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
+        //    string? response =
+        //        await pythonProcess.StandardOutput.ReadLineAsync();
 
-            pythonProcess = new Process
-            {
-                StartInfo = startInfo
-            };
+        //    if (string.IsNullOrWhiteSpace(response))
+        //        throw new InvalidOperationException(
+        //            "Python backend returned no response.");
 
-            pythonProcess.Start();
-        }
+        //    return JsonDocument.Parse(response);
+        //}
 
 
-        private async Task LoadBackendItemsAsync()
-        {
-            using JsonDocument response = await SendRequestAsync(
-                new { action = "get_items" });
 
-            JsonElement root = response.RootElement;
 
-            if (!root.GetProperty("success").GetBoolean())
-            {
-                MessageBox.Show("Could not load backend data.");
-                return;
-            }
+        //private async Task LoadBackendItemsAsync()
+        //{
+        //    using JsonDocument response = await SendRequestAsync(
+        //        new { action = "get_items" });
 
-            var items = root.GetProperty("data").GetProperty("items");
+        //    JsonElement root = response.RootElement;
 
-            // Replace the sample entries with backend data.
-            files.Clear();
+        //    if (!root.GetProperty("success").GetBoolean())
+        //    {
+        //        MessageBox.Show("Could not load backend data.");
+        //        return;
+        //    }
 
-            foreach (JsonElement item in items.EnumerateArray())
-            {
-                files.Add(new FileItem
-                {
-                    Name = item.GetProperty("name").GetString() ?? "",
-                    Type = "Application item",
-                    Modified = DateTime.Now.ToShortDateString(),
-                    Size = ""
-                });
-            }
+        //    var items = root.GetProperty("data").GetProperty("items");
 
-            fileView.Refresh();
-            UpdateStatus();
-        }
+        //    // Replace the sample entries with backend data.
+        //    files.Clear();
+
+        //    foreach (JsonElement item in items.EnumerateArray())
+        //    {
+        //        files.Add(new FileItem
+        //        {
+        //            Name = item.GetProperty("name").GetString() ?? "",
+        //            Type = "Application item",
+        //            Modified = DateTime.Now.ToShortDateString(),
+        //            Size = ""
+        //        });
+        //    }
+
+        //    fileView.Refresh();
+        //    UpdateStatus();
+        //}
 
 
 
@@ -235,6 +230,8 @@ namespace ExplorerStarter
             UpdateStatus();
         }
 
+        private PythonBackend? backend;
+
 
         public MainWindow()
         {
@@ -243,21 +240,13 @@ namespace ExplorerStarter
             fileView.Filter = FilterFiles;
             FileList.ItemsSource = fileView;
 
-            StartPythonBackend();
+            string scriptPath = Path.Combine(
+                 AppContext.BaseDirectory,
+                 "PythonBackend",
+                 "main.py");
 
-            Loaded += async (_, _) =>
-            {
-                try
-                {
-                    await LoadBackendItemsAsync();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Backend error: {ex.Message}",
-                        "Python connection");
-                }
-            };
+            // Set this to your actual Python executable path if needed.
+            backend = new PythonBackend("python", scriptPath);
 
 
 
