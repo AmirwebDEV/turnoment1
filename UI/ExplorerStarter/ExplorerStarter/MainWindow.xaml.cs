@@ -9,6 +9,11 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace ExplorerStarter
 {
@@ -23,6 +28,90 @@ namespace ExplorerStarter
         private Point selectionStart;
 
         private readonly HashSet<object> originalSelection = new();
+
+
+        private Process? pythonProcess;
+
+        private async Task<JsonDocument> SendRequestAsync(
+            object request)
+        {
+            if (pythonProcess == null || pythonProcess.HasExited)
+                throw new InvalidOperationException(
+                    "Python backend is not running.");
+
+            string json = JsonSerializer.Serialize(request);
+
+            await pythonProcess.StandardInput.WriteLineAsync(json);
+            await pythonProcess.StandardInput.FlushAsync();
+
+            string? response =
+                await pythonProcess.StandardOutput.ReadLineAsync();
+
+            if (string.IsNullOrWhiteSpace(response))
+                throw new InvalidOperationException(
+                    "Python backend returned no response.");
+
+            return JsonDocument.Parse(response);
+        }
+
+        private void StartPythonBackend()
+        {
+            string scriptPath = Path.GetFullPath("");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = $"\"{scriptPath}\"",
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            pythonProcess = new Process
+            {
+                StartInfo = startInfo
+            };
+
+            pythonProcess.Start();
+        }
+
+
+        private async Task LoadBackendItemsAsync()
+        {
+            using JsonDocument response = await SendRequestAsync(
+                new { action = "get_items" });
+
+            JsonElement root = response.RootElement;
+
+            if (!root.GetProperty("success").GetBoolean())
+            {
+                MessageBox.Show("Could not load backend data.");
+                return;
+            }
+
+            var items = root.GetProperty("data").GetProperty("items");
+
+            // Replace the sample entries with backend data.
+            files.Clear();
+
+            foreach (JsonElement item in items.EnumerateArray())
+            {
+                files.Add(new FileItem
+                {
+                    Name = item.GetProperty("name").GetString() ?? "",
+                    Type = "Application item",
+                    Modified = DateTime.Now.ToShortDateString(),
+                    Size = ""
+                });
+            }
+
+            fileView.Refresh();
+            UpdateStatus();
+        }
+
+
 
         private static T FindAncestor<T>(DependencyObject element)
             where T : DependencyObject
@@ -140,8 +229,8 @@ namespace ExplorerStarter
         }
 
         private void FileList_SelectionChanged(
-    object sender,
-    SelectionChangedEventArgs e)
+            object sender,
+            SelectionChangedEventArgs e)
         {
             UpdateStatus();
         }
@@ -150,10 +239,29 @@ namespace ExplorerStarter
         public MainWindow()
         {
             InitializeComponent();
-            InitializeTabs();
+            fileView = CollectionViewSource.GetDefaultView(files);
+            fileView.Filter = FilterFiles;
+            FileList.ItemsSource = fileView;
+
+            StartPythonBackend();
+
+            Loaded += async (_, _) =>
+            {
+                try
+                {
+                    await LoadBackendItemsAsync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"Backend error: {ex.Message}",
+                        "Python connection");
+                }
+            };
 
 
-            files.Add(new FileItem
+
+            /*files.Add(new FileItem
             {
                 Name = "Documents",
                 Type = "File folder",
@@ -193,7 +301,7 @@ namespace ExplorerStarter
                 Type = "PDF document",
                 Modified = DateTime.Today.ToShortDateString(),
                 Size = "120 KB"
-            });
+            });*/
 
             fileView = CollectionViewSource.GetDefaultView(files);
             fileView.Filter = FilterFiles;
@@ -220,92 +328,6 @@ namespace ExplorerStarter
         {
             fileView?.Refresh();
             UpdateStatus();
-        }
-
-
-        private readonly List<GroupTab> tabs = new();
-        private int nextTabId = 1;
-
-        public class GroupTab
-        {
-            public string Title { get; set; } = "New Tab";
-            public string Location { get; set; } = "Home";
-            public Brush Background { get; set; } = Brushes.White;
-        }
-
-        private void InitializeTabs()
-        {
-            tabs.Clear();
-
-            tabs.Add(new GroupTab
-            {
-                Title = "All",
-                Location = "Home",
-                Background = Brushes.White
-            });
-
-            TabBar.ItemsSource = tabs;
-        }
-
-        private void NewTab_Click(object sender, RoutedEventArgs e)
-        {
-            var tab = new GroupTab
-            {
-                Title = $"New Tab {nextTabId++}",
-                Location = "Home",
-                Background = Brushes.White
-            };
-
-            tabs.Add(tab);
-            TabBar.Items.Refresh();
-            ActivateTab(tab);
-        }
-
-        private void SelectTab_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button &&
-                button.Tag is GroupTab tab)
-            {
-                ActivateTab(tab);
-            }
-        }
-
-        private void CloseTab_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button ||
-                button.Tag is not GroupTab tab)
-                return;
-
-            if (tabs.Count == 1)
-            {
-                MessageBox.Show("At least one tab must remain open.");
-                return;
-            }
-
-            int index = tabs.IndexOf(tab);
-            tabs.Remove(tab);
-            TabBar.Items.Refresh();
-
-            int newIndex = Math.Min(index, tabs.Count - 1);
-            ActivateTab(tabs[newIndex]);
-        }
-
-        private void ActivateTab(GroupTab tab)
-        {
-            foreach (var item in tabs)
-            {
-                item.Background = ReferenceEquals(item, tab)
-                    ? Brushes.White
-                    : new SolidColorBrush(Color.FromRgb(222, 227, 234));
-            }
-
-            TabBar.Items.Refresh();
-
-            FolderTitle.Text = tab.Location;
-            AddressBox.Text = tab.Location;
-            SearchBox.Clear();
-
-            StatusText.Text = $"Location: {tab.Location}";
         }
 
 

@@ -1,0 +1,22 @@
+{
+  "test": {
+    "info": {
+      "name": "a random task",
+      "description": "bla bla bla"
+    },
+    "groups": {
+      "skills": [
+        "python",
+        "C#"
+      ],
+      "classes": [
+        "test",
+        "very serious topic"
+      ]
+    },
+    "data": {
+      "local": [ "data/test/test.txt" ],
+      "web": []
+    }
+  }
+}

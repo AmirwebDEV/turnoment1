@@ -136,14 +136,14 @@
                 <DockPanel>
                     <StackPanel Orientation="Horizontal"
                                 DockPanel.Dock="Left">
-                        <Button Content="&lt;"
+                        <Button Content="←"
                                 Width="36"
                                 Click="Back_Click"
-                                ToolTip="Back"/>
+                                ToolTip="Back" FontSize="18" VerticalAlignment="Center"/>
                         <Button
                                 Width="36"
                                 Click="Up_Click"
-                                ToolTip="Up" Content="/\"/>
+                                ToolTip="Up" Content="↑" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </StackPanel>
 
                     <TextBox x:Name="AddressBox"
@@ -170,75 +170,6 @@
                             Style="{StaticResource NavButton}"
                             Click="Delete_Click"/>
                 </StackPanel>
-            </Border>
-
-            <!-- Chrome-style tab bar -->
-            <Border Background="#DEE3EA"
-        Padding="8,7,8,0">
-                <DockPanel LastChildFill="True">
-
-                    <Button DockPanel.Dock="Right"
-                Content="+"
-                Width="34"
-                Height="30"
-                Margin="6,0,2,5"
-                FontSize="21"
-                Background="Transparent"
-                BorderThickness="0"
-                Cursor="Hand"
-                ToolTip="New tab"
-                Click="NewTab_Click"/>
-
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Disabled">
-                        <ItemsControl x:Name="TabBar">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{Binding Background}"
-                                CornerRadius="8,8,0,0"
-                                Width="190"
-                                Height="34"
-                                Margin="0,0,3,0"
-                                Padding="10,0">
-                                        <DockPanel LastChildFill="True"
-                                       VerticalAlignment="Center">
-
-                                            <Button DockPanel.Dock="Right"
-                                        Content="×"
-                                        Width="23"
-                                        Height="23"
-                                        Margin="5,0,0,0"
-                                        FontSize="17"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        Click="CloseTab_Click"
-                                        Tag="{Binding}"/>
-
-                                            <Button Content="{Binding Title}"
-                                        HorizontalContentAlignment="Left"
-                                        VerticalContentAlignment="Center"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="0"
-                                        FontSize="12"
-                                        ToolTip="{Binding Title}"
-                                        Cursor="Hand"
-                                        Click="SelectTab_Click"
-                                        Tag="{Binding}"/>
-                                        </DockPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </DockPanel>
             </Border>
 
             <!-- Navigation and address -->
@@ -337,12 +268,14 @@
           PreviewMouseLeftButtonUp="FileArea_MouseUp">
 
                     <ListView x:Name="FileList"
-                  Background="Transparent"
                   BorderThickness="0"
                   SelectionMode="Extended"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
                   MouseDoubleClick="FileList_DoubleClick">
+                        <ListView.Background>
+                            <ImageBrush/>
+                        </ListView.Background>
 
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
